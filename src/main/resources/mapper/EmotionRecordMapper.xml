@@ -6,9 +6,26 @@
 
     <insert id="insert" parameterType="com.example.namedmoment.entity.EmotionRecord"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO emotion_record (input_text, concept_id, match_score, explanation)
-        VALUES (#{inputText}, #{conceptId}, #{matchScore}, #{explanation})
+        INSERT INTO emotion_record (input_text, concept_id, match_score, explanation, created_at)
+        VALUES (#{inputText}, #{conceptId}, #{matchScore}, #{explanation}, #{createdAt})
     </insert>
+
+    <select id="selectAllResponses" resultType="com.example.namedmoment.dto.EmotionRecordResponse">
+        SELECT record.id,
+               record.input_text,
+               record.concept_id,
+               concept.name,
+               concept.language,
+               concept.meaning,
+               concept.description,
+               concept.source_url,
+               record.match_score,
+               record.explanation,
+               record.created_at
+        FROM emotion_record record
+        JOIN emotion_concept concept ON concept.id = record.concept_id
+        ORDER BY record.created_at DESC, record.id DESC
+    </select>
 
     <delete id="deleteById">
         DELETE FROM emotion_record
