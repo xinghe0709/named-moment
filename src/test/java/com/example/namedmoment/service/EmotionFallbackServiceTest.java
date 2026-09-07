@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.FileCopyUtils;
 import tools.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -80,6 +82,17 @@ class EmotionFallbackServiceTest {
                 () -> service.match(fingerprint()));
 
         assertEquals(ErrorCode.CONCEPT_MATCH_FAILED, exception.getErrorCode());
+    }
+
+    @Test
+    void shouldPreserveDatabaseFailure() {
+        doThrow(new DataAccessResourceFailureException("database unavailable"))
+                .when(service).requestRanking(anyString(), eq(tool));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.match(fingerprint()));
+
+        assertEquals(ErrorCode.DATABASE_ERROR, exception.getErrorCode());
     }
 
     @Test

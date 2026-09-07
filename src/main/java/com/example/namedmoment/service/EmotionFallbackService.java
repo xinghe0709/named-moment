@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -45,6 +46,9 @@ public class EmotionFallbackService {
         } catch (Exception exception) {
             log.warn("stage=tool-fallback status=failed type={}",
                     exception.getClass().getSimpleName());
+            if (containsDatabaseFailure(exception)) {
+                throw new BusinessException(ErrorCode.DATABASE_ERROR);
+            }
             throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
         }
     }
@@ -56,5 +60,16 @@ public class EmotionFallbackService {
                 .tools(tool)
                 .call()
                 .entity(ConceptRanking.class, spec -> spec.validateSchema());
+    }
+
+    private boolean containsDatabaseFailure(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof DataAccessException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }
