@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: named-moment
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/named_moment}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  sql:
+    init:
+      mode: always
+  ai:
+    retry:
+      max-attempts: 2
+      backoff:
+        initial-interval: 500ms
+        max-interval: 2s
+    openai:
+      api-key: ${DASHSCOPE_API_KEY:replace-with-your-key}
+      base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
+      chat:
+        options:
+          model: ${DASHSCOPE_CHAT_MODEL:qwen3.7-plus}
+          temperature: 0.2
+          extra-body:
+            enable_thinking: false
+      embedding:
+        options:
+          model: ${DASHSCOPE_EMBEDDING_MODEL:text-embedding-v4}
+          dimensions: 512
+    tools:
+      throw-exception-on-error: true
+      limits:
+        max-calls-per-tool:
+          searchEmotionConcepts: 2
+        max-total-tool-calls: 2
+        on-limit-exceeded: THROW
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  swagger-ui:
+    enabled: true
