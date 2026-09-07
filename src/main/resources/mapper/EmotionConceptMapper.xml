@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.namedmoment.mapper.EmotionConceptMapper">
+
+    <sql id="conceptColumns">
+        id, name, language, meaning, description, source_url, created_at
+    </sql>
+
+    <select id="selectById" resultType="com.example.namedmoment.entity.EmotionConcept">
+        SELECT <include refid="conceptColumns"/>
+        FROM emotion_concept
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByIds" resultType="com.example.namedmoment.entity.EmotionConcept">
+        SELECT <include refid="conceptColumns"/>
+        FROM emotion_concept
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="searchSimilar" resultType="com.example.namedmoment.dto.ConceptCandidate">
+        SELECT id,
+               name,
+               language,
+               meaning,
+               description,
+               source_url,
+               1 - (embedding &lt;=&gt; CAST(#{queryVector} AS vector)) AS vector_score
+        FROM emotion_concept
+        WHERE embedding IS NOT NULL
+        ORDER BY embedding &lt;=&gt; CAST(#{queryVector} AS vector)
+        LIMIT #{limit}
+    </select>
+
+    <select id="searchByKeywords" resultType="com.example.namedmoment.entity.EmotionConcept">
+        SELECT <include refid="conceptColumns"/>
+        FROM emotion_concept
+        WHERE
+        <foreach collection="keywords" item="keyword" separator=" OR ">
+            (name ILIKE CONCAT('%', #{keyword}, '%')
+            OR meaning ILIKE CONCAT('%', #{keyword}, '%')
+            OR description ILIKE CONCAT('%', #{keyword}, '%'))
+        </foreach>
+        ORDER BY id
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectWithoutEmbedding" resultType="com.example.namedmoment.entity.EmotionConcept">
+        SELECT <include refid="conceptColumns"/>
+        FROM emotion_concept
+        WHERE embedding IS NULL
+          AND id &gt; #{afterId}
+        ORDER BY id
+        LIMIT #{limit}
+    </select>
+
+    <update id="updateEmbedding">
+        UPDATE emotion_concept
+        SET embedding = CAST(#{embedding} AS vector)
+        WHERE id = #{id}
+    </update>
+
+</mapper>
