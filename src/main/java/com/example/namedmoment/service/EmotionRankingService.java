@@ -1,5 +1,6 @@
 package com.example.namedmoment.service;
 
+import com.example.namedmoment.constant.AppConstants;
 import com.example.namedmoment.dto.ConceptCandidate;
 import com.example.namedmoment.dto.ConceptMatch;
 import com.example.namedmoment.dto.ConceptRanking;
@@ -37,12 +38,29 @@ public class EmotionRankingService {
                                    List<ConceptCandidate> candidates) {
         try {
             String payload = buildPayload(fingerprint, candidates);
-            ConceptRanking ranking = requestRanking(payload);
             Set<Long> allowedIds = new HashSet<Long>();
             for (ConceptCandidate candidate : candidates) {
                 allowedIds.add(candidate.getId());
             }
-            return MatchResultUtils.validateAndSort(ranking.getMatches(), allowedIds);
+
+            BusinessException validationException = null;
+            for (int attempt = 1;
+                 attempt <= AppConstants.AI_SEMANTIC_MAX_ATTEMPTS; attempt++) {
+                ConceptRanking ranking = requestRanking(payload);
+                List<ConceptMatch> matches = ranking == null ? null : ranking.getMatches();
+                try {
+                    return MatchResultUtils.validateAndSort(matches, allowedIds);
+                } catch (BusinessException exception) {
+                    validationException = exception;
+                    log.warn("stage=rerank-validation status=retry attempt={} "
+                                    + "matchCount={} candidateCount={}",
+                            attempt, matches == null ? 0 : matches.size(),
+                            allowedIds.size());
+                }
+            }
+            throw validationException == null
+                    ? new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED)
+                    : validationException;
         } catch (BusinessException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -57,7 +75,8 @@ public class EmotionRankingService {
                 .system(rerankPrompt)
                 .user("情感指纹与候选概念：\n" + payload)
                 .call()
-                .entity(ConceptRanking.class, spec -> spec.validateSchema());
+                .entity(ConceptRanking.class,
+                        spec -> spec.useProviderStructuredOutput().validateSchema());
     }
 
     private String buildPayload(EmotionFingerprint fingerprint,

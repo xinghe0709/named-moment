@@ -12,6 +12,9 @@ public class AiConfig {
     @Resource
     private ObjectProvider<ChatClient.Builder> chatClientBuilderProvider;
 
+    @Resource
+    private RequiredFirstToolChoiceAdvisor requiredFirstToolChoiceAdvisor;
+
     @Bean("analysisChatClient")
     public ChatClient analysisChatClient() {
         return chatClientBuilderProvider.getObject().build();
@@ -19,6 +22,8 @@ public class AiConfig {
 
     @Bean("fallbackChatClient")
     public ChatClient fallbackChatClient() {
-        return chatClientBuilderProvider.getObject().build();
+        return chatClientBuilderProvider.getObject()
+                .defaultAdvisors(requiredFirstToolChoiceAdvisor)
+                .build();
     }
 }

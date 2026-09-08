@@ -9,7 +9,7 @@
 - Spring AI 把自由文本转换为 `EmotionFingerprint` 结构化对象。
 - Embedding + PostgreSQL/pgvector 召回候选概念。
 - Chat Model 对候选重排，最终事实字段始终从数据库回填。
-- RAG 失败时，模型通过工具查询 `emotion_concept` 做兜底匹配。
+- RAG 失败时，Advisor 强制模型先调用数据库工具，再对工具返回的真实候选做结构化重排。
 - 用户可保存、查看和删除自己选中的情感记录。
 - 100 条概念种子全部包含中文含义、场景描述和 HTTPS 来源。
 
@@ -29,7 +29,7 @@
 - JDK 21
 - Maven 3.9+
 - Docker Desktop
-- 阿里云百炼 DashScope API Key
+- 已启动的 OpenAI 兼容模型服务（聊天模型与 Embedding 模型）
 
 确认版本：
 
@@ -45,7 +45,7 @@ docker info
 cp .env.example .env
 ```
 
-把 `.env` 中的 `DASHSCOPE_API_KEY` 替换为真实值，然后让当前终端加载它：
+默认连接 `http://127.0.0.1:8000/v1`。把 `.env` 中的 `AI_API_KEY` 替换为本地服务密钥。Spring AI 2.0.1 使用 OpenAI SDK，`AI_BASE_URL` 需要包含 `/v1`。然后让当前终端加载配置：
 
 ```bash
 set -a
@@ -70,7 +70,7 @@ docker compose ps
 mvn spring-boot:run
 ```
 
-启动时会先执行 `schema.sql` 和 `data.sql`，再为缺少向量的概念调用 Embedding API。初始化按每批 20 条查询、逐条写入；失败项会记录警告，并在下一次启动时重试。未设置 `DASHSCOPE_API_KEY` 时会跳过向量初始化并只记录一次警告，记录类接口仍可使用，但匹配接口不可用。全部完成后可执行：
+启动时会先执行 `schema.sql` 和 `data.sql`，再为缺少向量的概念调用 Embedding API。初始化按每批 20 条查询、逐条写入；失败项会记录警告，并在下一次启动时重试。未设置 `AI_API_KEY` 时会跳过向量初始化并只记录一次警告，记录类接口仍可使用，但匹配接口不可用。全部完成后可执行：
 
 ```bash
 docker exec named-moment-postgres psql -U postgres -d named_moment \
@@ -92,6 +92,14 @@ docker exec named-moment-postgres psql -U postgres -d named_moment \
 ```bash
 mvn clean verify
 ```
+
+默认测试不会连接本地模型。需要额外验证真实 Spring AI 工具调用时，在已加载 `.env` 的终端运行：
+
+```bash
+RUN_LOCAL_AI_IT=true mvn -Dtest=EmotionFallbackLocalTest test
+```
+
+该测试会确认模型生成检索关键词、Advisor 强制首轮工具调用、`emotion_concept` 查询以及最终三个合法 ID 的结构化重排。
 
 运行数据库质量门禁：
 

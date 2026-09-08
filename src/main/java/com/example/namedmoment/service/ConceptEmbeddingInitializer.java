@@ -26,12 +26,12 @@ public class ConceptEmbeddingInitializer implements ApplicationRunner {
     @Resource
     private EmbeddingModel embeddingModel;
 
-    @Value("${DASHSCOPE_API_KEY:}")
-    private String dashScopeApiKey;
+    @Value("${AI_API_KEY:}")
+    private String aiApiKey;
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!StringUtils.hasText(dashScopeApiKey)) {
+        if (!StringUtils.hasText(aiApiKey)) {
             log.warn("stage=embedding-init status=skipped reason=missing-api-key");
             return;
         }

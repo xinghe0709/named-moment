@@ -37,12 +37,12 @@ class ConceptEmbeddingInitializerTest {
         initializer = new ConceptEmbeddingInitializer();
         ReflectionTestUtils.setField(initializer, "emotionConceptMapper", emotionConceptMapper);
         ReflectionTestUtils.setField(initializer, "embeddingModel", embeddingModel);
-        ReflectionTestUtils.setField(initializer, "dashScopeApiKey", "test-key");
+        ReflectionTestUtils.setField(initializer, "aiApiKey", "test-key");
     }
 
     @Test
     void shouldSkipInitializationWhenApiKeyIsMissing() throws Exception {
-        ReflectionTestUtils.setField(initializer, "dashScopeApiKey", "  ");
+        ReflectionTestUtils.setField(initializer, "aiApiKey", "  ");
 
         initializer.run(null);
 

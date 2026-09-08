@@ -80,6 +80,8 @@ public class EmotionMatchService {
             }
         }
         if (validCandidates.size() < AppConstants.MATCH_RESULT_LIMIT) {
+            log.warn("stage=vector-recall status=failed recalledCount={} validCount={}",
+                    recalled == null ? 0 : recalled.size(), validCandidates.size());
             throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
         }
 

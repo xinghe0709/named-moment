@@ -28,10 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class EmotionFallbackServiceTest {
@@ -58,12 +61,13 @@ class EmotionFallbackServiceTest {
         service = spy(new EmotionFallbackService());
         ReflectionTestUtils.setField(service, "emotionConceptToolsProvider", provider);
         ReflectionTestUtils.setField(service, "objectMapper", new ObjectMapper());
+        doNothing().when(service).requestToolSearch(anyString(), eq(tool));
     }
 
     @Test
     void shouldAcceptOnlyIdsReturnedByTool() {
         doReturn(ranking(1L, 2L, 3L))
-                .when(service).requestRanking(anyString(), eq(tool));
+                .when(service).requestRanking(anyString());
 
         List<ConceptMatch> result = service.match(fingerprint());
 
@@ -76,7 +80,7 @@ class EmotionFallbackServiceTest {
     @Test
     void shouldRejectIdNotReturnedByTool() {
         doReturn(ranking(1L, 2L, 99L))
-                .when(service).requestRanking(anyString(), eq(tool));
+                .when(service).requestRanking(anyString());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> service.match(fingerprint()));
@@ -85,9 +89,23 @@ class EmotionFallbackServiceTest {
     }
 
     @Test
+    void shouldRetryWhenFirstToolRankingIsInvalid() {
+        doReturn(ranking(1L, 2L, 99L), ranking(1L, 2L, 3L))
+                .when(service).requestRanking(anyString());
+
+        List<ConceptMatch> result = service.match(fingerprint());
+
+        assertEquals(Arrays.asList(1L, 2L, 3L), Arrays.asList(
+                result.get(0).getConceptId(),
+                result.get(1).getConceptId(),
+                result.get(2).getConceptId()));
+        verify(service, times(2)).requestRanking(anyString());
+    }
+
+    @Test
     void shouldPreserveDatabaseFailure() {
         doThrow(new DataAccessResourceFailureException("database unavailable"))
-                .when(service).requestRanking(anyString(), eq(tool));
+                .when(service).requestToolSearch(anyString(), eq(tool));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> service.match(fingerprint()));
@@ -101,10 +119,16 @@ class EmotionFallbackServiceTest {
         String prompt = FileCopyUtils.copyToString(
                 new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
 
-        assertTrue(prompt.contains("必须调用 searchEmotionConcepts"));
-        assertTrue(prompt.contains("只能使用工具返回的 conceptId"));
-        assertTrue(prompt.contains("不得创造概念"));
-        assertTrue(prompt.contains("返回三个结果"));
+        assertTrue(prompt.contains("必须调用一次 searchEmotionConcepts"));
+        assertTrue(prompt.contains("只负责选择检索关键词并调用工具"));
+
+        ClassPathResource rerankResource =
+                new ClassPathResource("prompts/emotion-tool-rerank.st");
+        String rerankPrompt = FileCopyUtils.copyToString(
+                new InputStreamReader(rerankResource.getInputStream(), StandardCharsets.UTF_8));
+        assertTrue(rerankPrompt.contains("只能使用候选 conceptId"));
+        assertTrue(rerankPrompt.contains("不得创造概念"));
+        assertTrue(rerankPrompt.contains("返回三个结果"));
     }
 
     private EmotionFingerprint fingerprint() {

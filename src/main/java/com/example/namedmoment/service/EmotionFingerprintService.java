@@ -34,6 +34,7 @@ public class EmotionFingerprintService {
                 .system(fingerprintPrompt)
                 .user("用户输入数据：\n" + inputText)
                 .call()
-                .entity(EmotionFingerprint.class, spec -> spec.validateSchema());
+                .entity(EmotionFingerprint.class,
+                        spec -> spec.useProviderStructuredOutput().validateSchema());
     }
 }

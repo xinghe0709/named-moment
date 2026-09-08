@@ -8,6 +8,7 @@ import com.example.namedmoment.enums.ErrorCode;
 import com.example.namedmoment.exception.BusinessException;
 import com.example.namedmoment.mapper.EmotionConceptMapper;
 import jakarta.annotation.Resource;
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -16,8 +17,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -30,7 +33,12 @@ public class EmotionConceptTools {
 
     private final Set<Long> returnedConceptIds = new HashSet<Long>();
 
-    @Tool(description = "按情绪、场景和心理体验关键词查询数据库中真实存在的情感概念")
+    @Getter(AccessLevel.NONE)
+    private final Map<Long, EmotionConceptToolItem> returnedConcepts =
+            new LinkedHashMap<Long, EmotionConceptToolItem>();
+
+    @Tool(description = "按情绪、场景和心理体验关键词查询数据库中真实存在的情感概念",
+            returnDirect = true)
     public List<EmotionConceptToolItem> searchEmotionConcepts(
             EmotionConceptToolRequest request) {
         List<String> keywords = normalizeAndValidate(request);
@@ -39,16 +47,22 @@ public class EmotionConceptTools {
 
         List<EmotionConceptToolItem> items = new ArrayList<EmotionConceptToolItem>();
         for (EmotionConcept concept : concepts) {
-            returnedConceptIds.add(concept.getId());
-            items.add(EmotionConceptToolItem.builder()
+            EmotionConceptToolItem item = EmotionConceptToolItem.builder()
                     .conceptId(concept.getId())
                     .name(concept.getName())
                     .language(concept.getLanguage())
                     .meaning(concept.getMeaning())
                     .description(concept.getDescription())
-                    .build());
+                    .build();
+            returnedConceptIds.add(concept.getId());
+            returnedConcepts.put(concept.getId(), item);
+            items.add(item);
         }
         return items;
+    }
+
+    public List<EmotionConceptToolItem> getReturnedConcepts() {
+        return new ArrayList<EmotionConceptToolItem>(returnedConcepts.values());
     }
 
     private List<String> normalizeAndValidate(EmotionConceptToolRequest request) {

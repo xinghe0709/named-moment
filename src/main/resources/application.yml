@@ -18,17 +18,17 @@ spring:
         initial-interval: 500ms
         max-interval: 2s
     openai:
-      api-key: ${DASHSCOPE_API_KEY:not-configured}
-      base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
+      api-key: ${AI_API_KEY:not-configured}
+      base-url: ${AI_BASE_URL:http://127.0.0.1:8000/v1}
       chat:
         options:
-          model: ${DASHSCOPE_CHAT_MODEL:qwen3.7-plus}
+          model: ${AI_CHAT_MODEL:Qwen3.6-35B-A3B-4bit}
           temperature: 0.2
           extra-body:
             enable_thinking: false
       embedding:
         options:
-          model: ${DASHSCOPE_EMBEDDING_MODEL:text-embedding-v4}
+          model: ${AI_EMBEDDING_MODEL:Qwen3-Embedding-0.6B-8bit}
           dimensions: 512
     tools:
       throw-exception-on-error: true

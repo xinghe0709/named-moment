@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class EmotionRankingServiceTest {
 
@@ -63,6 +65,22 @@ class EmotionRankingServiceTest {
                 () -> service.rank(fingerprint(), candidates(1L, 2L, 3L)));
 
         assertEquals(ErrorCode.CONCEPT_MATCH_FAILED, exception.getErrorCode());
+    }
+
+    @Test
+    void shouldRetryWhenFirstRankingViolatesCandidateScope() {
+        doReturn(ranking(match(1L, 90), match(2L, 80), match(99L, 70)),
+                ranking(match(1L, 90), match(2L, 80), match(3L, 70)))
+                .when(service).requestRanking(anyString());
+
+        List<ConceptMatch> result = service.rank(
+                fingerprint(), candidates(1L, 2L, 3L));
+
+        assertEquals(Arrays.asList(1L, 2L, 3L), Arrays.asList(
+                result.get(0).getConceptId(),
+                result.get(1).getConceptId(),
+                result.get(2).getConceptId()));
+        verify(service, times(2)).requestRanking(anyString());
     }
 
     @Test

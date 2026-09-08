@@ -90,6 +90,9 @@ class EmotionConceptToolsTest {
 
         assertEquals(new java.util.HashSet<Long>(Arrays.asList(1L, 2L)),
                 tools.getReturnedConceptIds());
+        assertEquals(Arrays.asList(1L, 2L), Arrays.asList(
+                tools.getReturnedConcepts().get(0).getConceptId(),
+                tools.getReturnedConcepts().get(1).getConceptId()));
     }
 
     private EmotionConceptToolRequest request(String... keywords) {
