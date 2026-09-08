@@ -52,7 +52,7 @@ class EmotionRecordServiceTest {
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> service.save(requestFor(42L)));
 
-        assertEquals(ErrorCode.CONCEPT_MATCH_FAILED, exception.getErrorCode());
+        assertEquals(ErrorCode.PARAM_ERROR, exception.getErrorCode());
         verify(emotionRecordMapper, never()).insert(any(EmotionRecord.class));
     }
 

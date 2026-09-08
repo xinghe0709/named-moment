@@ -69,7 +69,7 @@
 44. Memento mori（拉丁语）
 45. Memento vivere（拉丁语）
 46. Mono no aware / 物の哀れ（日语）
-47. Qué será será（西班牙语表达）
+47. Saṃsāra / संसार（梵语）
 48. Duḥkha / दुःख（梵语/巴利语）
 49. Shiv'ah / שבעה（希伯来语）
 50. Sirva vigad（匈牙利语）
@@ -104,7 +104,7 @@
 74. Muditā / मुदिता（梵语/巴利语）
 75. Shinrin-yoku / 森林浴（日语）
 76. Yūgen / 幽玄（日语）
-77. Iduni（约鲁巴语）
+77. Pohoda（捷克语）
 78. Pyt（丹麦语）
 79. Niksen（荷兰语）
 80. Susegad（孔卡尼语）
@@ -122,7 +122,7 @@
 87. Ishq / عشق（阿拉伯语）
 88. Jeong / 정（韩语）
 89. Kilig（他加禄语）
-90. Mamihlapinatapai（雅甘语）
+90. Coup de cœur（法语）
 91. Philia / φιλία（希腊语）
 92. Retrouvailles（法语）
 93. Yuán fèn / 缘分（中文）

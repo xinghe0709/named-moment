@@ -62,7 +62,7 @@ docker compose up -d postgres
 docker compose ps
 ```
 
-容器首次启动时会自动创建 `vector` 扩展、两张表和 100 条概念数据。
+这一步只启动数据库。`vector` 扩展、两张表和 100 条概念数据由下一步的 Spring Boot 初始化脚本创建。
 
 ### 4. 启动后端
 
@@ -70,7 +70,7 @@ docker compose ps
 mvn spring-boot:run
 ```
 
-首次启动会为缺少向量的概念调用 Embedding API。初始化按每批 20 条查询、逐条写入；失败项会记录警告，并在下一次启动时重试。全部完成后可执行：
+启动时会先执行 `schema.sql` 和 `data.sql`，再为缺少向量的概念调用 Embedding API。初始化按每批 20 条查询、逐条写入；失败项会记录警告，并在下一次启动时重试。未设置 `DASHSCOPE_API_KEY` 时会跳过向量初始化并只记录一次警告，记录类接口仍可使用，但匹配接口不可用。全部完成后可执行：
 
 ```bash
 docker exec named-moment-postgres psql -U postgres -d named_moment \

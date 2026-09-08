@@ -27,8 +27,8 @@ public class EmotionRecordCreateRequest {
     private Long conceptId;
 
     @NotNull
-    @Min(0)
-    @Max(100)
+    @Min(AppConstants.MATCH_SCORE_MIN)
+    @Max(AppConstants.MATCH_SCORE_MAX)
     private Integer matchScore;
 
     @NotBlank

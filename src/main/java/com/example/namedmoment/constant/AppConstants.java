@@ -6,6 +6,8 @@ public final class AppConstants {
     public static final int INPUT_MAX_LENGTH = 2000;
     public static final int VECTOR_RECALL_LIMIT = 10;
     public static final int MATCH_RESULT_LIMIT = 3;
+    public static final int MATCH_SCORE_MIN = 0;
+    public static final int MATCH_SCORE_MAX = 100;
     public static final int TOOL_QUERY_LIMIT = 20;
     public static final int TOOL_KEYWORD_LIMIT = 5;
     public static final int TOOL_KEYWORD_MIN_LENGTH = 2;

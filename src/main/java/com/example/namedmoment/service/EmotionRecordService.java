@@ -28,7 +28,7 @@ public class EmotionRecordService {
     public EmotionRecordResponse save(EmotionRecordCreateRequest request) {
         EmotionConcept concept = emotionConceptMapper.selectById(request.getConceptId());
         if (concept == null) {
-            throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
 
         OffsetDateTime createdAt = OffsetDateTime.now();

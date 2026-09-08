@@ -100,7 +100,17 @@ curl -X DELETE 'http://localhost:8080/api/emotions/records/1'
 }
 ```
 
-保存或删除的记录不存在：
+保存时提交了不存在的 `conceptId`：
+
+```json
+{
+  "code": 40001,
+  "message": "参数错误",
+  "data": null
+}
+```
+
+删除的情感记录不存在：
 
 ```json
 {

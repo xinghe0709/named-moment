@@ -18,6 +18,7 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +37,16 @@ class ConceptEmbeddingInitializerTest {
         initializer = new ConceptEmbeddingInitializer();
         ReflectionTestUtils.setField(initializer, "emotionConceptMapper", emotionConceptMapper);
         ReflectionTestUtils.setField(initializer, "embeddingModel", embeddingModel);
+        ReflectionTestUtils.setField(initializer, "dashScopeApiKey", "test-key");
+    }
+
+    @Test
+    void shouldSkipInitializationWhenApiKeyIsMissing() throws Exception {
+        ReflectionTestUtils.setField(initializer, "dashScopeApiKey", "  ");
+
+        initializer.run(null);
+
+        verifyNoInteractions(emotionConceptMapper, embeddingModel);
     }
 
     @Test

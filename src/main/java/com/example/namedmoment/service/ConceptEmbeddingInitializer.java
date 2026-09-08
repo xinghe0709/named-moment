@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -24,8 +26,16 @@ public class ConceptEmbeddingInitializer implements ApplicationRunner {
     @Resource
     private EmbeddingModel embeddingModel;
 
+    @Value("${DASHSCOPE_API_KEY:}")
+    private String dashScopeApiKey;
+
     @Override
     public void run(ApplicationArguments args) {
+        if (!StringUtils.hasText(dashScopeApiKey)) {
+            log.warn("stage=embedding-init status=skipped reason=missing-api-key");
+            return;
+        }
+
         long afterId = 0L;
         while (true) {
             List<EmotionConcept> batch = emotionConceptMapper.selectWithoutEmbedding(

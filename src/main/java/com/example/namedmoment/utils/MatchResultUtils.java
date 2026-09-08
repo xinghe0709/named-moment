@@ -50,7 +50,8 @@ public final class MatchResultUtils {
             return false;
         }
         Integer score = match.getMatchScore();
-        if (score == null || score < 0 || score > 100) {
+        if (score == null || score < AppConstants.MATCH_SCORE_MIN
+                || score > AppConstants.MATCH_SCORE_MAX) {
             return false;
         }
         String explanation = match.getExplanation();
