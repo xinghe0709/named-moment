@@ -21,6 +21,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -54,6 +55,11 @@ public class EmotionFallbackService {
             }
 
             String rankingPayload = buildRankingPayload(fingerprint, candidates);
+            Set<Long> returnedConceptIds = tool.getReturnedConceptIds();
+            Map<Long, String> candidateNames = new LinkedHashMap<Long, String>();
+            for (EmotionConceptToolItem candidate : candidates) {
+                candidateNames.put(candidate.getConceptId(), candidate.getName());
+            }
             BusinessException validationException = null;
             for (int attempt = 1;
                  attempt <= AppConstants.AI_SEMANTIC_MAX_ATTEMPTS; attempt++) {
@@ -61,13 +67,13 @@ public class EmotionFallbackService {
                 List<ConceptMatch> matches = ranking == null ? null : ranking.getMatches();
                 try {
                     return MatchResultUtils.validateAndSort(
-                            matches, tool.getReturnedConceptIds());
+                            matches, returnedConceptIds, candidateNames);
                 } catch (BusinessException exception) {
                     validationException = exception;
                     log.warn("stage=tool-validation status=retry attempt={} "
                                     + "matchCount={} returnedConceptCount={}",
                             attempt, matches == null ? 0 : matches.size(),
-                            tool.getReturnedConceptIds().size());
+                            returnedConceptIds.size());
                 }
             }
             throw validationException == null

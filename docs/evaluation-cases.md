@@ -36,8 +36,39 @@
 
 ## 运行记录
 
-真实数据库、模型密钥和 100 条向量准备好后填写。未执行的条目不能记作通过。
+2026-09-08 使用本地 Qwen 聊天模型、Embedding 模型和 PostgreSQL 中的 100 条真实概念执行。最终联合回归中 19 条走 RAG，第 2 条因重排解释引用了其他候选名称，被语义校验拒绝后通过数据库工具兜底完成。
+
+结果摘要：
+
+- 数据库事实、三个唯一 ID、分数范围和 HTTPS 来源：20/20。
+- 初始可接受概念 Top 3 命中：19/20，高于 16/20 的 MVP 门槛。
+- 平均耗时 5267ms；RAG 样本约 4.5～5.8 秒，发生两次重排校验和工具兜底的第 2 条为 12995ms。
+- 60 条解释长度为 42～73 个字符，平均 58 个字符。
+- 重排解释若明确引用了其他候选名称，会被判为无效并触发现有重试；最终响应会把少量绝对化措辞归一为更克制的表达。
+- 第 10 条是当前概念库覆盖边界：返回内容围绕“游离、缺失和无对象忧郁”，但没有命中初始标注的 `Ibasho / Cynefin / Heimat`。
+- 模型输出存在随机波动；单轮结果用于回归观察，稳定性应通过后续多轮评测衡量。
 
 | # | Top 3 | 事实正确 | 核心命中 | 解释贴合 | 结果有区分 | 备注 |
 |---|---|---|---|---|---|---|
-| 1-20 | 待运行 | 待检查 | 待检查 | 待检查 | 待检查 | 当前 Docker 尚未完成首次系统授权 |
+| 1 | Natsukashii / Hiraeth / Tizita | 是 | 是 | 是 | 是 | RAG |
+| 2 | Hiraeth / Natsukashii / Manqué | 是 | 是 | 是 | 是 | TOOL_FALLBACK；解释错位校验触发 |
+| 3 | Hiraeth / Cynefin / Hiányérzet | 是 | 是 | 是 | 是 | RAG |
+| 4 | Mono no aware / Utakata / Memento mori | 是 | 是 | 是 | 是 | RAG |
+| 5 | Charmolypi / Tizita / Natsukashii | 是 | 是 | 是 | 是 | RAG |
+| 6 | Vemod / Anitya / Saudade | 是 | 是 | 是 | 是 | RAG |
+| 7 | Hiányérzet / Toska / Duḥkha | 是 | 是 | 是 | 是 | RAG |
+| 8 | Retrouvailles / Ah-un / Natsukashii | 是 | 是 | 是 | 是 | RAG |
+| 9 | Kama muta / Heimat / Gezellig | 是 | 是 | 是 | 是 | RAG |
+| 10 | Elvágyódás / Hiányérzet / Toska | 是 | 否 | 是 | 是 | RAG；未命中初始可接受概念集合 |
+| 11 | Gelassenheit / Niksen / Mysa | 是 | 是 | 是 | 是 | RAG |
+| 12 | Gelassenheit / Yūgen / Ataraxia | 是 | 是 | 是 | 是 | RAG |
+| 13 | Fjaka / Gelassenheit / Fàng xīn | 是 | 是 | 是 | 是 | RAG |
+| 14 | Komorebi / Hygge / Pohoda | 是 | 是 | 是 | 是 | RAG |
+| 15 | Firgun / Muditā / Kama muta | 是 | 是 | 是 | 是 | RAG |
+| 16 | Datsuzoku / Anitya / Elvágyódás | 是 | 是 | 是 | 是 | RAG |
+| 17 | Manqué / Hrepenenje / Sehnsucht | 是 | 是 | 是 | 是 | RAG |
+| 18 | Ah-un / Zweisamkeit / Eshra | 是 | 是 | 是 | 是 | RAG |
+| 19 | Datsuzoku / Shinrin-yoku / Mysa | 是 | 是 | 是 | 是 | RAG |
+| 20 | Natsukashii / Tizita / Wabi-sabi | 是 | 是 | 是 | 是 | RAG |
+
+评测原始报告由测试写入 `target/emotion-evaluation-results.json`，每次运行会覆盖。固定输入和可接受概念位于 `src/test/resources/evaluation/emotion-match-cases.json`。

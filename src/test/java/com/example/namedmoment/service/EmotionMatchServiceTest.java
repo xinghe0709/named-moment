@@ -141,6 +141,22 @@ class EmotionMatchServiceTest {
         assertEquals(3, captor.getValue().size());
     }
 
+    @Test
+    void shouldToneDownAbsoluteExplanationWording() {
+        arrangeFingerprintAndRag(candidates(0.91D, 0.85D, 0.72D));
+        List<ConceptMatch> rankedMatches = matches(1L, 2L, 3L);
+        rankedMatches.get(0).setExplanation(
+                "它精准捕捉了细节，并完美契合用户体验。");
+        when(emotionRankingService.rank(eq(fingerprint), anyList()))
+                .thenReturn(rankedMatches);
+        arrangeConceptLookup(1L, 2L, 3L);
+
+        EmotionMatchResponse response = service.match("一段足够长的异乡回忆");
+
+        assertEquals("它准确捕捉了细节，并很好地契合用户体验。",
+                response.getCandidates().get(0).getExplanation());
+    }
+
     private void arrangeFingerprintAndRag(List<ConceptCandidate> candidates) {
         when(emotionFingerprintService.analyze(anyString())).thenReturn(fingerprint);
         when(embeddingModel.embed(anyString()))

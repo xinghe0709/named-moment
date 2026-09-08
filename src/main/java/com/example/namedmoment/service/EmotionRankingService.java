@@ -39,8 +39,10 @@ public class EmotionRankingService {
         try {
             String payload = buildPayload(fingerprint, candidates);
             Set<Long> allowedIds = new HashSet<Long>();
+            Map<Long, String> candidateNames = new LinkedHashMap<Long, String>();
             for (ConceptCandidate candidate : candidates) {
                 allowedIds.add(candidate.getId());
+                candidateNames.put(candidate.getId(), candidate.getName());
             }
 
             BusinessException validationException = null;
@@ -49,7 +51,8 @@ public class EmotionRankingService {
                 ConceptRanking ranking = requestRanking(payload);
                 List<ConceptMatch> matches = ranking == null ? null : ranking.getMatches();
                 try {
-                    return MatchResultUtils.validateAndSort(matches, allowedIds);
+                    return MatchResultUtils.validateAndSort(
+                            matches, allowedIds, candidateNames);
                 } catch (BusinessException exception) {
                     validationException = exception;
                     log.warn("stage=rerank-validation status=retry attempt={} "

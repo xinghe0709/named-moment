@@ -101,6 +101,20 @@ RUN_LOCAL_AI_IT=true mvn -Dtest=EmotionFallbackLocalTest test
 
 该测试会确认模型生成检索关键词、Advisor 强制首轮工具调用、`emotion_concept` 查询以及最终三个合法 ID 的结构化重排。
 
+运行 20 条真实匹配质量评测：
+
+```bash
+RUN_LOCAL_AI_EVAL=true mvn -Dtest=EmotionMatchEvaluationLocalTest test
+```
+
+测试会执行完整的情感指纹、Embedding、向量召回、重排和必要的工具兜底链路。它要求全部结果通过数据库事实与结构检查，并且至少 16 条在 Top 3 中命中人工标注的可接受概念。详细结果写入 `target/emotion-evaluation-results.json`，固定评测集和人工复核记录见 [docs/evaluation-cases.md](docs/evaluation-cases.md)。
+
+同时验证全部单元测试、真实工具调用和 20 条评测：
+
+```bash
+RUN_LOCAL_AI_IT=true RUN_LOCAL_AI_EVAL=true mvn test
+```
+
 运行数据库质量门禁：
 
 ```bash

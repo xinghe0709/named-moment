@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class MatchResultUtils {
@@ -20,14 +21,21 @@ public final class MatchResultUtils {
 
     public static List<ConceptMatch> validateAndSort(List<ConceptMatch> matches,
                                                      Set<Long> allowedIds) {
+        return validateAndSort(matches, allowedIds,
+                Collections.<Long, String>emptyMap());
+    }
+
+    public static List<ConceptMatch> validateAndSort(List<ConceptMatch> matches,
+                                                     Set<Long> allowedIds,
+                                                     Map<Long, String> candidateNames) {
         if (matches == null || matches.size() != AppConstants.MATCH_RESULT_LIMIT
-                || allowedIds == null) {
+                || allowedIds == null || candidateNames == null) {
             throw matchFailure();
         }
 
         Set<Long> seenIds = new HashSet<Long>();
         for (ConceptMatch match : matches) {
-            if (!isValid(match, allowedIds, seenIds)) {
+            if (!isValid(match, allowedIds, seenIds, candidateNames)) {
                 throw matchFailure();
             }
         }
@@ -43,7 +51,8 @@ public final class MatchResultUtils {
     }
 
     private static boolean isValid(ConceptMatch match, Set<Long> allowedIds,
-                                   Set<Long> seenIds) {
+                                   Set<Long> seenIds,
+                                   Map<Long, String> candidateNames) {
         if (match == null || match.getConceptId() == null
                 || !allowedIds.contains(match.getConceptId())
                 || !seenIds.add(match.getConceptId())) {
@@ -55,7 +64,26 @@ public final class MatchResultUtils {
             return false;
         }
         String explanation = match.getExplanation();
-        return explanation != null && !explanation.trim().isEmpty();
+        return explanation != null && !explanation.trim().isEmpty()
+                && !referencesAnotherCandidate(
+                match.getConceptId(), explanation, candidateNames);
+    }
+
+    private static boolean referencesAnotherCandidate(
+            Long selectedConceptId,
+            String explanation,
+            Map<Long, String> candidateNames) {
+        for (Map.Entry<Long, String> entry : candidateNames.entrySet()) {
+            if (selectedConceptId.equals(entry.getKey())) {
+                continue;
+            }
+            String candidateName = entry.getValue();
+            if (candidateName != null && !candidateName.trim().isEmpty()
+                    && explanation.contains(candidateName.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static BusinessException matchFailure() {

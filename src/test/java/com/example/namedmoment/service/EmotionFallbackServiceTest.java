@@ -103,6 +103,23 @@ class EmotionFallbackServiceTest {
     }
 
     @Test
+    void shouldRetryWhenToolExplanationNamesAnotherCandidate() {
+        doReturn(ConceptRanking.builder()
+                        .matches(Arrays.asList(
+                                match(1L, 93, "概念2更贴合当前体验"),
+                                match(2L, 88),
+                                match(3L, 80)))
+                        .build(),
+                ranking(1L, 2L, 3L))
+                .when(service).requestRanking(anyString());
+
+        List<ConceptMatch> result = service.match(fingerprint());
+
+        assertEquals(3, result.size());
+        verify(service, times(2)).requestRanking(anyString());
+    }
+
+    @Test
     void shouldPreserveDatabaseFailure() {
         doThrow(new DataAccessResourceFailureException("database unavailable"))
                 .when(service).requestToolSearch(anyString(), eq(tool));
@@ -148,10 +165,14 @@ class EmotionFallbackServiceTest {
     }
 
     private ConceptMatch match(Long id, Integer score) {
+        return match(id, score, "工具兜底解释" + id);
+    }
+
+    private ConceptMatch match(Long id, Integer score, String explanation) {
         return ConceptMatch.builder()
                 .conceptId(id)
                 .matchScore(score)
-                .explanation("工具兜底解释" + id)
+                .explanation(explanation)
                 .build();
     }
 

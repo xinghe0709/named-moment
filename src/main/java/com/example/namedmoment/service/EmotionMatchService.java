@@ -12,6 +12,7 @@ import com.example.namedmoment.enums.MatchMode;
 import com.example.namedmoment.exception.BusinessException;
 import com.example.namedmoment.mapper.EmotionConceptMapper;
 import com.example.namedmoment.utils.EmbeddingTextUtils;
+import com.example.namedmoment.utils.ExplanationTextUtils;
 import com.example.namedmoment.utils.VectorUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -124,7 +125,8 @@ public class EmotionMatchService {
                     .description(concept.getDescription())
                     .sourceUrl(concept.getSourceUrl())
                     .matchScore(match.getMatchScore())
-                    .explanation(match.getExplanation())
+                    .explanation(ExplanationTextUtils.normalize(
+                            match.getExplanation()))
                     .build());
         }
 

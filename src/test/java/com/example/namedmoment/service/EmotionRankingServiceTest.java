@@ -84,6 +84,22 @@ class EmotionRankingServiceTest {
     }
 
     @Test
+    void shouldRetryWhenExplanationNamesAnotherCandidate() {
+        doReturn(ranking(
+                        match(1L, 90, "概念2更贴合当前体验"),
+                        match(2L, 80),
+                        match(3L, 70)),
+                ranking(match(1L, 90), match(2L, 80), match(3L, 70)))
+                .when(service).requestRanking(anyString());
+
+        List<ConceptMatch> result = service.rank(
+                fingerprint(), candidates(1L, 2L, 3L));
+
+        assertEquals(3, result.size());
+        verify(service, times(2)).requestRanking(anyString());
+    }
+
+    @Test
     void shouldKeepRerankConstraintsInPrompt() throws Exception {
         ClassPathResource resource = new ClassPathResource("prompts/emotion-rerank.st");
         String prompt = FileCopyUtils.copyToString(
@@ -126,10 +142,14 @@ class EmotionRankingServiceTest {
     }
 
     private ConceptMatch match(Long id, Integer score) {
+        return match(id, score, "匹配解释" + id);
+    }
+
+    private ConceptMatch match(Long id, Integer score, String explanation) {
         return ConceptMatch.builder()
                 .conceptId(id)
                 .matchScore(score)
-                .explanation("匹配解释" + id)
+                .explanation(explanation)
                 .build();
     }
 }

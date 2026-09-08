@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "input": "毕业离开住了多年的城市后，一瓶熟悉的饮料突然让我觉得从前的生活像另一个世界。",
+    "acceptableConcepts": ["Natsukashii (懐かしい)", "Hiraeth", "Tizita (ትዝታ)"]
+  },
+  {
+    "id": 2,
+    "input": "我想念的不是某个地方，而是那个地方曾经的自己。",
+    "acceptableConcepts": ["Hiraeth", "Natsukashii (懐かしい)", "Cynefin"]
+  },
+  {
+    "id": 3,
+    "input": "回到故乡后街道几乎没变，但我已经找不到当年属于这里的感觉。",
+    "acceptableConcepts": ["Hiraeth", "Cynefin", "Heimat"]
+  },
+  {
+    "id": 4,
+    "input": "明知道这段相聚很快结束，所以连普通的晚饭都显得格外珍贵。",
+    "acceptableConcepts": ["Mono no aware (物の哀れ)", "Vemod", "Ukiyo (浮世)"]
+  },
+  {
+    "id": 5,
+    "input": "亲人离开很久了，我遇到好消息时还是会下意识想告诉他。",
+    "acceptableConcepts": ["Saudade", "Dor", "Tizita (ትዝታ)"]
+  },
+  {
+    "id": 6,
+    "input": "一段关系没有争吵也没有告别，只是慢慢不再说话。",
+    "acceptableConcepts": ["Hiányérzet", "Saudade", "Sayang"]
+  },
+  {
+    "id": 7,
+    "input": "我在人群里很热闹，却觉得没有一个人真正看见我。",
+    "acceptableConcepts": ["Ibasho (居場所)", "Hiányérzet", "Toska (тоска)"]
+  },
+  {
+    "id": 8,
+    "input": "和老朋友很久没见，坐下来却像昨天才分别。",
+    "acceptableConcepts": ["Retrouvailles", "Jeong (정)", "Ah-un (阿吽)"]
+  },
+  {
+    "id": 9,
+    "input": "在陌生城市有人递给我一碗热汤，我突然产生了家的感觉。",
+    "acceptableConcepts": ["Heimat", "Geborgenheit", "Cwtch"]
+  },
+  {
+    "id": 10,
+    "input": "我同时属于两种文化，也常常觉得自己不完全属于任何一边。",
+    "acceptableConcepts": ["Ibasho (居場所)", "Cynefin", "Heimat"]
+  },
+  {
+    "id": 11,
+    "input": "大雨停后空气很凉，我什么都不想追，只想安静地走回家。",
+    "acceptableConcepts": ["Ataraxia (ἀταραξία)", "Gelassenheit", "Pohoda", "Fjaka"]
+  },
+  {
+    "id": 12,
+    "input": "看见广阔星空时，我感到自己很渺小，却一点也不害怕。",
+    "acceptableConcepts": ["Yūgen (幽玄)", "Ataraxia (ἀταραξία)", "Hózhó"]
+  },
+  {
+    "id": 13,
+    "input": "忙了很久的事情结束后，没有兴奋，只有身体终于松下来的感觉。",
+    "acceptableConcepts": ["Fàng xīn (放心)", "Fjaka", "Gelassenheit"]
+  },
+  {
+    "id": 14,
+    "input": "阳光照在晾晒的床单上，那一刻普通生活让我非常满足。",
+    "acceptableConcepts": ["Hygge", "Pohoda", "Kos", "Mysa"]
+  },
+  {
+    "id": 15,
+    "input": "听到朋友取得成功，我真心觉得像自己也得到了一份礼物。",
+    "acceptableConcepts": ["Firgun (פירגון)", "Muditā (मुदिता)"]
+  },
+  {
+    "id": 16,
+    "input": "新生活终于开始了，我既自由又害怕，像站在没有栏杆的门口。",
+    "acceptableConcepts": ["Datsuzoku (脱俗)", "Ansias", "Elvágyódás"]
+  },
+  {
+    "id": 17,
+    "input": "做出选择后我并不后悔，却会想念那些从此不会发生的人生。",
+    "acceptableConcepts": ["Manqué", "Sehnsucht", "Sayang"]
+  },
+  {
+    "id": 18,
+    "input": "我们彼此都明白对方在关心，却谁也没有把那句话说出来。",
+    "acceptableConcepts": ["Ah-un (阿吽)", "Jeong (정)", "Téng (疼)"]
+  },
+  {
+    "id": 19,
+    "input": "独自旅行时没有孤单，反而第一次听清了自己的想法。",
+    "acceptableConcepts": ["Datsuzoku (脱俗)", "Ataraxia (ἀταραξία)", "Friluftsliv"]
+  },
+  {
+    "id": 20,
+    "input": "整理旧房间时发现童年的小东西，我为它还在而高兴，也为时间过去而难过。",
+    "acceptableConcepts": ["Natsukashii (懐かしい)", "Charmolypi (χαρμολύπη)", "Vemod", "Mono no aware (物の哀れ)"]
+  }
+]
