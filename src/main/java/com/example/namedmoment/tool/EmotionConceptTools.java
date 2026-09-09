@@ -10,6 +10,7 @@ import com.example.namedmoment.mapper.EmotionConceptMapper;
 import jakarta.annotation.Resource;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Getter
+@Slf4j
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class EmotionConceptTools {
@@ -44,6 +46,8 @@ public class EmotionConceptTools {
         List<String> keywords = normalizeAndValidate(request);
         List<EmotionConcept> concepts = emotionConceptMapper.searchByKeywords(
                 keywords, AppConstants.TOOL_QUERY_LIMIT);
+        log.info("stage=tool-search status=success keywordCount={} resultCount={}",
+                keywords.size(), concepts.size());
 
         List<EmotionConceptToolItem> items = new ArrayList<EmotionConceptToolItem>();
         for (EmotionConcept concept : concepts) {

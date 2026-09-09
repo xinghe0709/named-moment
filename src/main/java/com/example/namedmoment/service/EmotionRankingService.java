@@ -8,6 +8,7 @@ import com.example.namedmoment.dto.EmotionFingerprint;
 import com.example.namedmoment.enums.ErrorCode;
 import com.example.namedmoment.exception.BusinessException;
 import com.example.namedmoment.utils.MatchResultUtils;
+import com.example.namedmoment.utils.ExceptionLogUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -36,6 +37,7 @@ public class EmotionRankingService {
 
     public List<ConceptMatch> rank(EmotionFingerprint fingerprint,
                                    List<ConceptCandidate> candidates) {
+        log.info("stage=rerank status=started candidateCount={}", candidates.size());
         try {
             String payload = buildPayload(fingerprint, candidates);
             Set<Long> allowedIds = new HashSet<Long>();
@@ -51,8 +53,11 @@ public class EmotionRankingService {
                 ConceptRanking ranking = requestRanking(payload);
                 List<ConceptMatch> matches = ranking == null ? null : ranking.getMatches();
                 try {
-                    return MatchResultUtils.validateAndSort(
+                    List<ConceptMatch> sortedMatches = MatchResultUtils.validateAndSort(
                             matches, allowedIds, candidateNames);
+                    log.info("stage=rerank status=success attempt={} matchCount={}",
+                            attempt, sortedMatches.size());
+                    return sortedMatches;
                 } catch (BusinessException exception) {
                     validationException = exception;
                     log.warn("stage=rerank-validation status=retry attempt={} "
@@ -67,9 +72,11 @@ public class EmotionRankingService {
         } catch (BusinessException exception) {
             throw exception;
         } catch (Exception exception) {
-            log.warn("stage=rerank status=failed type={}",
-                    exception.getClass().getSimpleName());
-            throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
+            log.warn("stage=rerank status=failed type={} rootType={} rootMessage={}",
+                    exception.getClass().getSimpleName(),
+                    ExceptionLogUtils.rootType(exception),
+                    ExceptionLogUtils.rootMessage(exception));
+            throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED, exception);
         }
     }
 

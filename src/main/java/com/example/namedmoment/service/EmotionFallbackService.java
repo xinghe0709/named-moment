@@ -9,6 +9,7 @@ import com.example.namedmoment.enums.ErrorCode;
 import com.example.namedmoment.exception.BusinessException;
 import com.example.namedmoment.tool.EmotionConceptTools;
 import com.example.namedmoment.utils.MatchResultUtils;
+import com.example.namedmoment.utils.ExceptionLogUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -44,6 +45,7 @@ public class EmotionFallbackService {
 
     public List<ConceptMatch> match(EmotionFingerprint fingerprint) {
         EmotionConceptTools tool = emotionConceptToolsProvider.getObject();
+        log.info("stage=tool-fallback status=started");
         try {
             String fingerprintPayload = objectMapper.writeValueAsString(fingerprint);
             requestToolSearch(fingerprintPayload, tool);
@@ -66,8 +68,12 @@ public class EmotionFallbackService {
                 ConceptRanking ranking = requestRanking(rankingPayload);
                 List<ConceptMatch> matches = ranking == null ? null : ranking.getMatches();
                 try {
-                    return MatchResultUtils.validateAndSort(
+                    List<ConceptMatch> sortedMatches = MatchResultUtils.validateAndSort(
                             matches, returnedConceptIds, candidateNames);
+                    log.info("stage=tool-fallback status=success attempt={} matchCount={} "
+                                    + "returnedConceptCount={}",
+                            attempt, sortedMatches.size(), candidates.size());
+                    return sortedMatches;
                 } catch (BusinessException exception) {
                     validationException = exception;
                     log.warn("stage=tool-validation status=retry attempt={} "
@@ -82,12 +88,14 @@ public class EmotionFallbackService {
         } catch (BusinessException exception) {
             throw exception;
         } catch (Exception exception) {
-            log.warn("stage=tool-fallback status=failed type={}",
-                    exception.getClass().getSimpleName());
+            log.warn("stage=tool-fallback status=failed type={} rootType={} rootMessage={}",
+                    exception.getClass().getSimpleName(),
+                    ExceptionLogUtils.rootType(exception),
+                    ExceptionLogUtils.rootMessage(exception));
             if (containsDatabaseFailure(exception)) {
-                throw new BusinessException(ErrorCode.DATABASE_ERROR);
+                throw new BusinessException(ErrorCode.DATABASE_ERROR, exception);
             }
-            throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
+            throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED, exception);
         }
     }
 

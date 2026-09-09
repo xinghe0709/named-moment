@@ -12,6 +12,7 @@ import com.example.namedmoment.enums.MatchMode;
 import com.example.namedmoment.exception.BusinessException;
 import com.example.namedmoment.mapper.EmotionConceptMapper;
 import com.example.namedmoment.utils.EmbeddingTextUtils;
+import com.example.namedmoment.utils.ExceptionLogUtils;
 import com.example.namedmoment.utils.ExplanationTextUtils;
 import com.example.namedmoment.utils.VectorUtils;
 import jakarta.annotation.Resource;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -45,21 +47,33 @@ public class EmotionMatchService {
     private EmbeddingModel embeddingModel;
 
     public EmotionMatchResponse match(String inputText) {
+        long startedAt = System.nanoTime();
+        log.info("stage=match status=started inputLength={}", inputText.length());
         EmotionFingerprint fingerprint = emotionFingerprintService.analyze(inputText);
         try {
-            return matchByRag(fingerprint);
+            EmotionMatchResponse response = matchByRag(fingerprint);
+            logMatchSuccess(response, startedAt);
+            return response;
         } catch (Exception ragException) {
-            log.warn("stage=rag status=fallback type={}",
-                    ragException.getClass().getSimpleName());
+            log.warn("stage=rag status=fallback type={} rootType={} rootMessage={}",
+                    ragException.getClass().getSimpleName(),
+                    ExceptionLogUtils.rootType(ragException),
+                    ExceptionLogUtils.rootMessage(ragException));
             try {
-                return matchByTool(fingerprint);
+                EmotionMatchResponse response = matchByTool(fingerprint);
+                logMatchSuccess(response, startedAt);
+                return response;
             } catch (Exception fallbackException) {
-                log.warn("stage=tool-fallback status=failed type={}",
-                        fallbackException.getClass().getSimpleName());
+                log.warn("stage=tool-fallback status=failed type={} rootType={} "
+                                + "rootMessage={} durationMs={}",
+                        fallbackException.getClass().getSimpleName(),
+                        ExceptionLogUtils.rootType(fallbackException),
+                        ExceptionLogUtils.rootMessage(fallbackException),
+                        elapsedMs(startedAt));
                 if (containsDatabaseFailure(fallbackException)) {
-                    throw new BusinessException(ErrorCode.DATABASE_ERROR);
+                    throw new BusinessException(ErrorCode.DATABASE_ERROR, fallbackException);
                 }
-                throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
+                throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED, fallbackException);
             }
         }
     }
@@ -85,6 +99,9 @@ public class EmotionMatchService {
                     recalled == null ? 0 : recalled.size(), validCandidates.size());
             throw new BusinessException(ErrorCode.CONCEPT_MATCH_FAILED);
         }
+
+        log.info("stage=vector-recall status=success recalledCount={} validCount={}",
+                recalled.size(), validCandidates.size());
 
         List<ConceptMatch> matches = emotionRankingService.rank(fingerprint, validCandidates);
         return buildResponse(fingerprint, MatchMode.RAG, matches);
@@ -150,5 +167,16 @@ public class EmotionMatchService {
             current = current.getCause();
         }
         return false;
+    }
+
+    private void logMatchSuccess(EmotionMatchResponse response, long startedAt) {
+        int candidateCount = response.getCandidates() == null
+                ? 0 : response.getCandidates().size();
+        log.info("stage=match status=success mode={} candidateCount={} durationMs={}",
+                response.getMatchMode(), candidateCount, elapsedMs(startedAt));
+    }
+
+    private long elapsedMs(long startedAt) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
     }
 }

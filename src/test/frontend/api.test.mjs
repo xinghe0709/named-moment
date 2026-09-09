@@ -75,3 +75,18 @@ test('http and malformed responses become readable ApiError instances', async ()
   await assert.rejects(() => httpApi.listRecords(), /服务暂不可用/);
   await assert.rejects(() => malformedApi.listRecords(), /没有返回可识别的结果/);
 });
+
+test('failed responses expose the server request id for log lookup', async () => {
+  const api = createEmotionApi(async () => ({
+    ok: false,
+    status: 500,
+    headers: {get: name => name === 'X-Request-Id' ? 'request-debug-123' : null},
+    json: async () => ({code: 50001, message: '情感指纹生成失败'})
+  }));
+
+  await assert.rejects(() => api.match('测试输入内容'), error => {
+    assert.equal(error.requestId, 'request-debug-123');
+    assert.match(error.message, /请求编号：request-debug-123/);
+    return true;
+  });
+});

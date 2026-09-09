@@ -15,7 +15,12 @@ public final class AppConstants {
     public static final int EMBEDDING_DIMENSION = 512;
     public static final int EMBEDDING_BATCH_SIZE = 20;
     public static final int AI_SEMANTIC_MAX_ATTEMPTS = 2;
+    public static final int REQUEST_ID_MAX_LENGTH = 64;
+    public static final int LOG_MESSAGE_MAX_LENGTH = 500;
     public static final double MIN_VECTOR_SCORE = 0.50D;
+    public static final String REQUEST_ID_HEADER = "X-Request-Id";
+    public static final String REQUEST_ID_MDC_KEY = "requestId";
+    public static final String API_PATH_PREFIX = "/api/";
 
     private AppConstants() {
         throw new IllegalStateException("Utility class");

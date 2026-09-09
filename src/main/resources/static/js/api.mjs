@@ -1,9 +1,10 @@
 export class ApiError extends Error {
-  constructor(message, code = null, status = null) {
-    super(message);
+  constructor(message, code = null, status = null, requestId = null) {
+    super(requestId ? `${message}（请求编号：${requestId}）` : message);
     this.name = 'ApiError';
     this.code = code;
     this.status = status;
+    this.requestId = requestId;
   }
 }
 
@@ -19,22 +20,25 @@ export function createEmotionApi(fetchImpl = globalThis.fetch) {
     } catch (error) {
       throw new ApiError('暂时无法连接服务，请确认应用仍在运行。');
     }
+    const requestId = response.headers?.get?.('X-Request-Id') || null;
 
     let payload;
     try {
       payload = await response.json();
     } catch (error) {
-      throw new ApiError('服务没有返回可识别的结果。', null, response.status);
+      throw new ApiError('服务没有返回可识别的结果。', null, response.status, requestId);
     }
 
     if (!response.ok) {
-      throw new ApiError(payload?.message || '服务暂时没有回应，请稍后再试。', payload?.code, response.status);
+      throw new ApiError(payload?.message || '服务暂时没有回应，请稍后再试。',
+        payload?.code, response.status, requestId);
     }
     if (!payload || typeof payload.code !== 'number') {
-      throw new ApiError('服务没有返回可识别的结果。', null, response.status);
+      throw new ApiError('服务没有返回可识别的结果。', null, response.status, requestId);
     }
     if (payload.code !== 0) {
-      throw new ApiError(payload.message || '这次请求没有完成。', payload.code, response.status);
+      throw new ApiError(payload.message || '这次请求没有完成。',
+        payload.code, response.status, requestId);
     }
     return payload.data;
   }

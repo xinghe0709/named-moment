@@ -24,4 +24,13 @@ class BusinessExceptionTest {
         assertEquals("success", result.getMessage());
         assertEquals("ok", result.getData());
     }
+
+    @Test
+    void shouldPreserveTechnicalCauseForDiagnostics() {
+        IllegalStateException cause = new IllegalStateException("provider rejected request");
+
+        BusinessException exception = new BusinessException(ErrorCode.FINGERPRINT_FAILED, cause);
+
+        assertEquals(cause, exception.getCause());
+    }
 }

@@ -46,13 +46,9 @@ docker info
 cp .env.example .env
 ```
 
-默认连接 `http://127.0.0.1:8000/v1`。把 `.env` 中的 `AI_API_KEY` 替换为本地服务密钥。Spring AI 2.0.1 使用 OpenAI SDK，`AI_BASE_URL` 需要包含 `/v1`。然后让当前终端加载配置：
+默认连接 `http://127.0.0.1:8000/v1`。把 `.env` 中的 `AI_API_KEY` 替换为本地服务密钥。Spring AI 2.0.1 使用 OpenAI SDK，`AI_BASE_URL` 需要包含 `/v1`。
 
-```bash
-set -a
-source .env
-set +a
-```
+应用启动时会自动读取项目根目录的 `.env`，不需要手动执行 `source .env`。因此请始终先 `cd` 到项目根目录再启动。
 
 `.env` 已被 Git 忽略，不要提交真实密钥。
 
@@ -70,6 +66,8 @@ docker compose ps
 ```bash
 mvn spring-boot:run
 ```
+
+看到 `stage=startup-diagnostics status=ready aiKeyConfigured=true` 说明 AI 配置已经生效。完整的依赖检查、启动验证、请求日志和常见错误排查见：[本地启动与排错](docs/startup.md)。
 
 启动时会先执行 `schema.sql` 和 `data.sql`，再为缺少向量的概念调用 Embedding API。初始化按每批 20 条查询、逐条写入；失败项会记录警告，并在下一次启动时重试。未设置 `AI_API_KEY` 时会跳过向量初始化并只记录一次警告，记录类接口仍可使用，但匹配接口不可用。全部完成后可执行：
 
