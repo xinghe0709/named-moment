@@ -1,8 +1,8 @@
 # 此刻有名（Named Moment）
 
-一个小而美的情感概念匹配服务。用户写下一段日记或想法，系统会生成结构化“情感指纹”，再从 100 个有来源的世界语言词汇与文化概念中返回匹配度最高的 3 个。
+一个小而美的情感概念匹配应用。用户写下一段日记或想法，系统会生成结构化“情感指纹”，再从 100 个有来源的世界语言词汇与文化概念中返回匹配度最高的 3 个。用户可以选出最像自己的一个，并把这一刻留进私人情感档案馆。
 
-当前只包含后端 API，不包含前端。
+前端使用原生 HTML、CSS 与 JavaScript，直接随 Spring Boot 打包和启动，不需要单独安装 Node 依赖或运行前端服务。
 
 ## MVP 能力
 
@@ -12,6 +12,7 @@
 - RAG 失败时，Advisor 强制模型先调用数据库工具，再对工具返回的真实候选做结构化重排。
 - 用户可保存、查看和删除自己选中的情感记录。
 - 100 条概念种子全部包含中文含义、场景描述和 HTTPS 来源。
+- 一体化响应式页面覆盖输入、等待、三个候选、保存、档案列表、删除、空状态与错误状态。
 
 ## 技术栈
 
@@ -64,7 +65,7 @@ docker compose ps
 
 这一步只启动数据库。`vector` 扩展、两张表和 100 条概念数据由下一步的 Spring Boot 初始化脚本创建。
 
-### 4. 启动后端
+### 4. 启动应用
 
 ```bash
 mvn spring-boot:run
@@ -81,6 +82,7 @@ docker exec named-moment-postgres psql -U postgres -d named_moment \
 
 ## 使用入口
 
+- 此刻有名：[http://localhost:8080/](http://localhost:8080/)
 - Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 - OpenAPI JSON: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 - 完整请求示例：[docs/api-examples.md](docs/api-examples.md)
@@ -92,6 +94,14 @@ docker exec named-moment-postgres psql -U postgres -d named_moment \
 ```bash
 mvn clean verify
 ```
+
+前端纯逻辑测试使用 Node.js 内置测试运行器，不需要安装依赖：
+
+```bash
+node --test src/test/frontend/*.test.mjs
+```
+
+`FrontendResourceTest` 会随 Maven 测试一起验证首页、响应式与无障碍契约、ES Modules 和玻璃纹理素材是否被正确打包。
 
 默认测试不会连接本地模型。需要额外验证真实 Spring AI 工具调用时，在已加载 `.env` 的终端运行：
 

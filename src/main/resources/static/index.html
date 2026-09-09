@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="写下一个难以言说的瞬间，从真实存在的世界语言概念中找到它的名字。">
+    <meta name="theme-color" content="#171918">
+    <title>此刻有名</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<!--
+THESIS: 让一个难以言说的瞬间在玻璃窗格中被逐步照亮，拒绝日记应用的纸张卡片和 AI 产品的发光控制台。
+OWN-WORLD: 墨黑金属窗框、冷白压花玻璃与整块钴蓝/琥珀/酒红背光；所有内容都住在连续建筑网格里。
+STORY: 用户写下此刻，看见情感指纹与三个真实概念，选择最像自己的一个，再把它留进私人档案馆。
+FIRST VIEWPORT: 窄承诺窗、中央大书写窗、右侧三块信任窗；主操作嵌入中央下方金属横梁。
+FORM: 背光玻璃馆藏墙，方向种子 67ec61a6。
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+
+<header class="topbar" aria-label="主导航">
+    <button class="brand-pane glass-pane" id="homeButton" type="button" aria-label="返回写下此刻">
+        <span>此刻有名</span>
+    </button>
+    <div class="topbar-spacer glass-pane" aria-hidden="true"></div>
+    <nav class="nav-pane glass-pane" aria-label="页面入口">
+        <button id="archiveButton" class="nav-action" type="button">
+            私人档案馆
+            <span id="archiveCount" class="archive-count" hidden></span>
+        </button>
+    </nav>
+</header>
+
+<main id="main-content" tabindex="-1">
+    <section id="composeView" class="view" aria-labelledby="composeTitle">
+        <div class="compose-wall wall-grid">
+            <form id="momentForm" class="compose-form" novalidate>
+                <div class="compose-pane glass-pane">
+                    <h1 id="composeTitle">告诉我一个你<br>无法解释的瞬间。</h1>
+                    <label class="sr-only" for="momentText">写下你的日记、想法或刚刚发生的事</label>
+                    <textarea id="momentText"
+                              name="moment"
+                              rows="8"
+                              minlength="5"
+                              maxlength="2000"
+                              aria-describedby="inputHint inputMessage"
+                              placeholder="写下一段日记、一个念头，或刚刚发生的事……"></textarea>
+                    <div id="analysisStatus" class="analysis-status" aria-live="polite" hidden>
+                        <span class="status-light" aria-hidden="true"></span>
+                        <span id="analysisStatusText">正在读懂这段文字里的情感重心……</span>
+                    </div>
+                    <div class="input-meta">
+                        <span id="inputHint">至少 5 个字</span>
+                        <span id="characterCount">0 / 2000</span>
+                    </div>
+                    <p id="inputMessage" class="input-message" aria-live="polite"></p>
+                </div>
+                <button id="matchButton" class="match-action" type="submit" disabled>
+                    <span id="matchButtonLabel">为此刻寻找名字</span>
+                    <span class="action-glint" aria-hidden="true"></span>
+                </button>
+            </form>
+
+            <aside class="promise-pane glass-pane" aria-label="产品理念">
+                <p>这种感觉，</p>
+                <p>世界上也许</p>
+                <p>早已有名字。</p>
+                <small>不需要先知道该搜索什么</small>
+            </aside>
+
+            <aside class="trust-stack" aria-label="匹配原则">
+                <div class="trust-pane trust-pane--cobalt glass-pane">
+                    <span>真实概念</span>
+                    <small>只从概念库中回答</small>
+                </div>
+                <div class="trust-pane trust-pane--amber glass-pane">
+                    <span>可靠来源</span>
+                    <small>每个词都可以核验</small>
+                </div>
+                <div class="trust-pane glass-pane">
+                    <span>三个答案</span>
+                    <small>由你决定哪一个最像</small>
+                </div>
+            </aside>
+        </div>
+
+    </section>
+
+    <section id="resultsView" class="view" aria-labelledby="resultsTitle" hidden>
+        <header class="section-rail">
+            <button id="writeAgainButton" class="rail-action" type="button">重新写一个此刻</button>
+            <div>
+                <h2 id="resultsTitle" tabindex="-1">我找到三个接近的名字</h2>
+                <p id="matchModeLabel">经真实概念库匹配</p>
+            </div>
+        </header>
+        <div id="resultsWall" class="results-wall wall-grid"></div>
+        <div id="resultMessage" class="section-message" aria-live="polite"></div>
+    </section>
+
+    <section id="archiveView" class="view" aria-labelledby="archiveTitle" hidden>
+        <header class="section-rail section-rail--archive">
+            <button id="newMomentButton" class="rail-action" type="button">写下新的此刻</button>
+            <div>
+                <h2 id="archiveTitle" tabindex="-1">私人情感档案馆</h2>
+                <p>你曾为这些感受选择过名字</p>
+            </div>
+        </header>
+        <div id="archiveStatus" class="archive-status glass-pane" aria-live="polite">
+            正在打开你的档案馆……
+        </div>
+        <div id="archiveWall" class="archive-wall wall-grid" hidden></div>
+    </section>
+</main>
+
+<div id="globalMessage" class="global-message" role="status" aria-live="polite" hidden></div>
+
+<noscript>
+    <p class="noscript-message">此刻有名需要启用 JavaScript 才能完成概念匹配与档案操作。</p>
+</noscript>
+
+<script type="module" src="/js/app.mjs"></script>
+</body>
+</html>
