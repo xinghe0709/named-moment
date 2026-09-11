@@ -93,18 +93,21 @@ mvn spring-boot:run -Dspring-boot.run.profiles=demo
 另开一个终端启动临时公网入口：
 
 ```bash
-cloudflared tunnel --url http://127.0.0.1:8080
+cloudflared tunnel --protocol http2 --url http://127.0.0.1:8080
 ```
 
 演示模式下登录/注册接口每个来源地址 10 分钟最多尝试 20 次。`AUTH_TOKEN_SECRET` 只通过当前终端环境变量提供，不要写入 Git 或聊天记录。
 
 ## 使用入口
 
+- 在线体验（临时 Quick Tunnel）：[https://expanding-kyle-opening-childrens.trycloudflare.com](https://expanding-kyle-opening-childrens.trycloudflare.com)
 - 此刻有名：[http://localhost:8080/](http://localhost:8080/)
 - 登录和注册在首页右上角；匹配可以匿名使用，保存和私人档案馆需要登录。
 - Swagger UI（仅本地开发模式）：[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 - OpenAPI JSON: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 - 完整请求示例：[docs/api-examples.md](docs/api-examples.md)
+
+> 在线地址是临时 Quick Tunnel，仅在本机应用和 `cloudflared` 进程保持运行时有效；重启 Tunnel 后地址会变化。
 
 ## 验证
 
