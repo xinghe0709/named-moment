@@ -27,6 +27,26 @@ test('match posts trimmed user text to the matching endpoint', async () => {
   assert.deepEqual(JSON.parse(calls[0].options.body), {text: '想念从前的生活'});
 });
 
+test('auth operations use same-origin cookie sessions', async () => {
+  const calls = [];
+  const api = createEmotionApi(successFetch(calls, {id: 4, username: 'reader'}));
+
+  await api.register('reader', 'long-enough-password');
+  await api.login('reader', 'long-enough-password');
+  await api.me();
+  await api.logout();
+
+  assert.equal(calls[0].url, '/api/auth/register');
+  assert.deepEqual(JSON.parse(calls[0].options.body), {
+    username: 'reader', password: 'long-enough-password'
+  });
+  assert.equal(calls[0].options.credentials, 'same-origin');
+  assert.equal(calls[1].url, '/api/auth/login');
+  assert.equal(calls[2].url, '/api/auth/me');
+  assert.equal(calls[3].url, '/api/auth/logout');
+  assert.equal(calls[3].options.method, 'POST');
+});
+
 test('record operations use the existing REST contract', async () => {
   const calls = [];
   const payload = {inputText: '这一刻', conceptId: 7, matchScore: 91, explanation: '很接近'};

@@ -9,7 +9,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/named_moment}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:}
   sql:
     init:
       mode: always
@@ -48,6 +48,11 @@ mybatis:
 springdoc:
   swagger-ui:
     enabled: true
+
+auth:
+  token-secret: ${AUTH_TOKEN_SECRET:change-this-local-secret-before-production}
+  cookie-secure: ${AUTH_COOKIE_SECURE:false}
+  require-secure-secret: ${AUTH_REQUIRE_SECURE_SECRET:false}
 
 logging:
   pattern:

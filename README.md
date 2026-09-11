@@ -11,6 +11,7 @@
 - Chat Model 对候选重排，最终事实字段始终从数据库回填。
 - RAG 失败时，Advisor 强制模型先调用数据库工具，再对工具返回的真实候选做结构化重排。
 - 用户可保存、查看和删除自己选中的情感记录。
+- 用户可以注册、登录和退出；私人档案按账号隔离，密码使用 PBKDF2 哈希保存。
 - 500 条概念种子全部包含中文含义、场景描述和 HTTPS 来源。
 - 一体化响应式页面覆盖输入、等待、三个候选、保存、档案列表、删除、空状态与错误状态。
 
@@ -52,6 +53,8 @@ cp .env.example .env
 
 `.env` 已被 Git 忽略，不要提交真实密钥。
 
+生产环境请额外设置高强度的 `AUTH_TOKEN_SECRET`，用于签名登录会话，并设置 `AUTH_COOKIE_SECURE=true`；本地未设置时会使用仅供开发验证的默认值。
+
 ### 3. 启动 PostgreSQL
 
 ```bash
@@ -59,7 +62,7 @@ docker compose up -d postgres
 docker compose ps
 ```
 
-这一步只启动数据库。`vector` 扩展、两张表和 500 条概念数据由下一步的 Spring Boot 初始化脚本创建。
+这一步只启动数据库。`vector` 扩展、用户/概念/记录三张表和 500 条概念数据由下一步的 Spring Boot 初始化脚本创建。
 
 ### 4. 启动应用
 
@@ -78,10 +81,28 @@ docker exec named-moment-postgres psql -U postgres -d named_moment \
 
 预期结果为 `0`。
 
+### 5. Quick Tunnel 演示模式
+
+演示模式只让 Spring Boot 监听本机回环地址，关闭 Swagger 和 OpenAPI 文档，并强制使用 HTTPS Cookie。先确认 `.env` 中的 `DB_PASSWORD` 已不再是默认值，然后在项目目录执行：
+
+```bash
+export AUTH_TOKEN_SECRET="$(openssl rand -hex 32)"
+mvn spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+另开一个终端启动临时公网入口：
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:8080
+```
+
+演示模式下登录/注册接口每个来源地址 10 分钟最多尝试 20 次。`AUTH_TOKEN_SECRET` 只通过当前终端环境变量提供，不要写入 Git 或聊天记录。
+
 ## 使用入口
 
 - 此刻有名：[http://localhost:8080/](http://localhost:8080/)
-- Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- 登录和注册在首页右上角；匹配可以匿名使用，保存和私人档案馆需要登录。
+- Swagger UI（仅本地开发模式）：[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 - OpenAPI JSON: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 - 完整请求示例：[docs/api-examples.md](docs/api-examples.md)
 
@@ -143,6 +164,6 @@ docker compose down
 ## 当前边界
 
 - 仅支持纯文字输入。
-- 无登录与多用户隔离，情感记录是本机共享数据。
+- 不提供找回密码、邮箱验证和第三方登录；当前账号体系适合本地 MVP，正式上线前应补充账户恢复和更严格的部署安全配置。
 - 不把匹配结果当作心理诊断或治疗建议。
 - 来源当前以研究者策展的 Positive Lexicography 为统一基线；正式发布前可优先为高频概念补充语言权威词典链接。

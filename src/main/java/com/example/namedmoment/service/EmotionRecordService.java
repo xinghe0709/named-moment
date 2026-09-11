@@ -25,7 +25,7 @@ public class EmotionRecordService {
     private EmotionRecordMapper emotionRecordMapper;
 
     @Transactional
-    public EmotionRecordResponse save(EmotionRecordCreateRequest request) {
+    public EmotionRecordResponse save(Long userId, EmotionRecordCreateRequest request) {
         EmotionConcept concept = emotionConceptMapper.selectById(request.getConceptId());
         if (concept == null) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
@@ -33,6 +33,7 @@ public class EmotionRecordService {
 
         OffsetDateTime createdAt = OffsetDateTime.now();
         EmotionRecord record = EmotionRecord.builder()
+                .userId(userId)
                 .inputText(request.getInputText().trim())
                 .conceptId(request.getConceptId())
                 .matchScore(request.getMatchScore())
@@ -56,13 +57,13 @@ public class EmotionRecordService {
                 .build();
     }
 
-    public List<EmotionRecordResponse> list() {
-        return emotionRecordMapper.selectAllResponses();
+    public List<EmotionRecordResponse> list(Long userId) {
+        return emotionRecordMapper.selectAllResponses(userId);
     }
 
     @Transactional
-    public void delete(Long id) {
-        if (emotionRecordMapper.deleteById(id) != 1) {
+    public void delete(Long userId, Long id) {
+        if (emotionRecordMapper.deleteById(userId, id) != 1) {
             throw new BusinessException(ErrorCode.RECORD_NOT_FOUND);
         }
     }

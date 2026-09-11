@@ -16,7 +16,7 @@ export function createEmotionApi(fetchImpl = globalThis.fetch) {
   async function request(url, options = {}) {
     let response;
     try {
-      response = await fetchImpl(url, options);
+      response = await fetchImpl(url, {credentials: 'same-origin', ...options});
     } catch (error) {
       throw new ApiError('暂时无法连接服务，请确认应用仍在运行。');
     }
@@ -52,6 +52,18 @@ export function createEmotionApi(fetchImpl = globalThis.fetch) {
   }
 
   return {
+    register(username, password) {
+      return request('/api/auth/register', jsonOptions('POST', {username, password}));
+    },
+    login(username, password) {
+      return request('/api/auth/login', jsonOptions('POST', {username, password}));
+    },
+    logout() {
+      return request('/api/auth/logout', {method: 'POST'});
+    },
+    me() {
+      return request('/api/auth/me', {method: 'GET'});
+    },
     match(text) {
       return request('/api/emotions/match', jsonOptions('POST', {text}));
     },

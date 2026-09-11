@@ -11,13 +11,10 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmotionRecord {
+public class AppUser {
 
     private Long id;
-    private Long userId;
-    private String inputText;
-    private Long conceptId;
-    private Integer matchScore;
-    private String explanation;
+    private String username;
+    private String passwordHash;
     private OffsetDateTime createdAt;
 }

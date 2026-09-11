@@ -50,7 +50,7 @@ class EmotionRecordServiceTest {
         when(emotionConceptMapper.selectById(42L)).thenReturn(null);
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> service.save(requestFor(42L)));
+                () -> service.save(11L, requestFor(42L)));
 
         assertEquals(ErrorCode.PARAM_ERROR, exception.getErrorCode());
         verify(emotionRecordMapper, never()).insert(any(EmotionRecord.class));
@@ -66,11 +66,12 @@ class EmotionRecordServiceTest {
             return 1;
         });
 
-        EmotionRecordResponse response = service.save(requestFor(3L));
+        EmotionRecordResponse response = service.save(11L, requestFor(3L));
 
         ArgumentCaptor<EmotionRecord> captor = ArgumentCaptor.forClass(EmotionRecord.class);
         verify(emotionRecordMapper).insert(captor.capture());
         assertEquals("一段足够长的情感文字", captor.getValue().getInputText());
+        assertEquals(11L, captor.getValue().getUserId());
         assertEquals(3L, captor.getValue().getConceptId());
         assertEquals(9L, response.getId());
         assertEquals("Sehnsucht", response.getName());
@@ -81,9 +82,9 @@ class EmotionRecordServiceTest {
         List<EmotionRecordResponse> expected = Arrays.asList(
                 EmotionRecordResponse.builder().id(2L).build(),
                 EmotionRecordResponse.builder().id(1L).build());
-        when(emotionRecordMapper.selectAllResponses()).thenReturn(expected);
+        when(emotionRecordMapper.selectAllResponses(11L)).thenReturn(expected);
 
-        List<EmotionRecordResponse> actual = service.list();
+        List<EmotionRecordResponse> actual = service.list(11L);
 
         assertEquals(Arrays.asList(2L, 1L),
                 Arrays.asList(actual.get(0).getId(), actual.get(1).getId()));
@@ -91,19 +92,19 @@ class EmotionRecordServiceTest {
 
     @Test
     void shouldDeleteExistingRecord() {
-        when(emotionRecordMapper.deleteById(7L)).thenReturn(1);
+        when(emotionRecordMapper.deleteById(11L, 7L)).thenReturn(1);
 
-        service.delete(7L);
+        service.delete(11L, 7L);
 
-        verify(emotionRecordMapper).deleteById(7L);
+        verify(emotionRecordMapper).deleteById(11L, 7L);
     }
 
     @Test
     void shouldRejectDeletingMissingRecord() {
-        when(emotionRecordMapper.deleteById(7L)).thenReturn(0);
+        when(emotionRecordMapper.deleteById(11L, 7L)).thenReturn(0);
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> service.delete(7L));
+                () -> service.delete(11L, 7L));
 
         assertEquals(ErrorCode.RECORD_NOT_FOUND, exception.getErrorCode());
     }

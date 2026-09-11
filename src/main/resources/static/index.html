@@ -29,6 +29,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             私人档案馆
             <span id="archiveCount" class="archive-count" hidden></span>
         </button>
+        <button id="accountButton" class="nav-action account-action" type="button">登录</button>
     </nav>
 </header>
 
@@ -111,6 +112,33 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             正在打开你的档案馆……
         </div>
         <div id="archiveWall" class="archive-wall wall-grid" hidden></div>
+    </section>
+
+    <section id="authView" class="view" aria-labelledby="authTitle" hidden>
+        <div class="auth-wall wall-grid">
+            <aside class="auth-promise glass-pane" aria-label="登录说明">
+                <p>你的感受，</p>
+                <p>值得有一处</p>
+                <p>只属于你的地方。</p>
+                <small>登录后才能保存和查看私人档案</small>
+            </aside>
+            <div class="auth-pane glass-pane">
+                <h2 id="authTitle">登录私人档案馆</h2>
+                <p id="authLead">写下此刻不需要登录，保存它时再来就好。</p>
+                <form id="authForm" class="auth-form" novalidate>
+                    <label for="authUsername">用户名</label>
+                    <input id="authUsername" name="username" type="text" minlength="3" maxlength="32"
+                           autocomplete="username" autocapitalize="none" spellcheck="false"
+                           placeholder="3–32 位字母、数字、下划线或短横线" required>
+                    <label for="authPassword">密码</label>
+                    <input id="authPassword" name="password" type="password" minlength="8" maxlength="72"
+                           autocomplete="current-password" placeholder="至少 8 位" required>
+                    <p id="authMessage" class="auth-message" aria-live="polite"></p>
+                    <button id="authSubmit" class="auth-submit" type="submit">登录</button>
+                </form>
+                <button id="authModeButton" class="auth-mode-action" type="button">还没有账号？创建一个</button>
+            </div>
+        </div>
     </section>
 </main>
 

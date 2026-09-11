@@ -10,7 +10,7 @@ public interface EmotionRecordMapper {
 
     int insert(EmotionRecord record);
 
-    List<EmotionRecordResponse> selectAllResponses();
+    List<EmotionRecordResponse> selectAllResponses(@Param("userId") Long userId);
 
-    int deleteById(@Param("id") Long id);
+    int deleteById(@Param("userId") Long userId, @Param("id") Long id);
 }

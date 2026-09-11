@@ -3,6 +3,7 @@ package com.example.namedmoment.controller;
 import com.example.namedmoment.dto.EmotionRecordCreateRequest;
 import com.example.namedmoment.dto.EmotionRecordResponse;
 import com.example.namedmoment.dto.Result;
+import com.example.namedmoment.auth.AuthContext;
 import com.example.namedmoment.service.EmotionRecordService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -26,20 +27,23 @@ public class EmotionRecordController {
     @Resource
     private EmotionRecordService emotionRecordService;
 
+    @Resource
+    private AuthContext authContext;
+
     @PostMapping
     public Result<EmotionRecordResponse> save(
             @Valid @RequestBody EmotionRecordCreateRequest request) {
-        return Result.success(emotionRecordService.save(request));
+        return Result.success(emotionRecordService.save(authContext.requireUserId(), request));
     }
 
     @GetMapping
     public Result<List<EmotionRecordResponse>> list() {
-        return Result.success(emotionRecordService.list());
+        return Result.success(emotionRecordService.list(authContext.requireUserId()));
     }
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable @Positive Long id) {
-        emotionRecordService.delete(id);
+        emotionRecordService.delete(authContext.requireUserId(), id);
         return Result.success(null);
     }
 }

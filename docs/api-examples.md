@@ -12,7 +12,24 @@
 }
 ```
 
-## 1. 匹配三个概念
+## 1. 注册、登录与退出
+
+匹配接口可以匿名调用；保存和档案接口需要先登录。登录成功后服务端会返回 HttpOnly Cookie，后续同源请求会自动携带它。
+
+```bash
+COOKIE_FILE=/tmp/named-moment.cookies
+
+curl -X POST 'http://localhost:8080/api/auth/register' \
+  -H 'Content-Type: application/json' \
+  -c "$COOKIE_FILE" \
+  -d '{"username":"quiet_reader","password":"至少八位的密码"}'
+
+curl 'http://localhost:8080/api/auth/me' -b "$COOKIE_FILE"
+```
+
+已有账号登录使用 `POST /api/auth/login`，请求体相同；退出使用 `POST /api/auth/logout`。
+
+## 2. 匹配三个概念
 
 ```bash
 curl -X POST 'http://localhost:8080/api/emotions/match' \
@@ -57,7 +74,7 @@ curl -X POST 'http://localhost:8080/api/emotions/match' \
 - `matchMode=TOOL_FALLBACK` 表示 RAG 阶段异常或有效候选不足，已改用数据库工具查询兜底。
 - 示例中的 ID、分数和解释仅用于展示格式，以实际模型输出为准。
 
-## 2. 保存用户选中的结果
+## 3. 保存用户选中的结果
 
 客户端应把用户最终选择的候选项原样带入请求，不要自动保存全部三个结果。
 
@@ -74,21 +91,21 @@ curl -X POST 'http://localhost:8080/api/emotions/records' \
 
 响应中的概念名称、含义、描述和来源由服务端根据 `conceptId` 从数据库读取。
 
-## 3. 查看已保存记录
+## 4. 查看已保存记录
 
 ```bash
-curl 'http://localhost:8080/api/emotions/records'
+curl 'http://localhost:8080/api/emotions/records' -b "$COOKIE_FILE"
 ```
 
 记录按创建时间倒序返回。
 
-## 4. 删除一条记录
+## 5. 删除一条记录
 
 ```bash
-curl -X DELETE 'http://localhost:8080/api/emotions/records/1'
+curl -X DELETE 'http://localhost:8080/api/emotions/records/1' -b "$COOKIE_FILE"
 ```
 
-## 5. 常见错误
+## 6. 常见错误
 
 输入为空或少于 5 个字符：
 
@@ -96,6 +113,16 @@ curl -X DELETE 'http://localhost:8080/api/emotions/records/1'
 {
   "code": 40001,
   "message": "参数错误",
+  "data": null
+}
+```
+
+未登录访问私人接口：
+
+```json
+{
+  "code": 40101,
+  "message": "请先登录",
   "data": null
 }
 ```

@@ -16,7 +16,8 @@ const analysisSteps = [
 const views = {
   compose: document.querySelector('#composeView'),
   results: document.querySelector('#resultsView'),
-  archive: document.querySelector('#archiveView')
+  archive: document.querySelector('#archiveView'),
+  auth: document.querySelector('#authView')
 };
 
 const momentForm = document.querySelector('#momentForm');
@@ -34,11 +35,23 @@ const archiveStatus = document.querySelector('#archiveStatus');
 const archiveWall = document.querySelector('#archiveWall');
 const archiveCount = document.querySelector('#archiveCount');
 const globalMessage = document.querySelector('#globalMessage');
+const accountButton = document.querySelector('#accountButton');
+const authForm = document.querySelector('#authForm');
+const authTitle = document.querySelector('#authTitle');
+const authLead = document.querySelector('#authLead');
+const authUsername = document.querySelector('#authUsername');
+const authPassword = document.querySelector('#authPassword');
+const authMessage = document.querySelector('#authMessage');
+const authSubmit = document.querySelector('#authSubmit');
+const authModeButton = document.querySelector('#authModeButton');
 
 let currentInput = '';
 let analysisTimer = null;
 let globalMessageTimer = null;
 let knownArchiveCount = null;
+let currentUser = null;
+let authMode = 'login';
+let pendingAuthAction = null;
 
 function element(tagName, className, text) {
   const node = document.createElement(tagName);
@@ -106,6 +119,52 @@ function announce(message) {
   globalMessageTimer = window.setTimeout(() => {
     globalMessage.hidden = true;
   }, 4400);
+}
+
+function updateAccountButton() {
+  accountButton.textContent = currentUser ? `退出 ${currentUser.username}` : '登录';
+  accountButton.setAttribute('aria-label', currentUser
+    ? `退出 ${currentUser.username}`
+    : '登录私人档案馆');
+}
+
+function showAuth(mode = 'login', pendingAction = null) {
+  authMode = mode;
+  pendingAuthAction = pendingAction;
+  const registering = authMode === 'register';
+  authTitle.textContent = registering ? '创建私人档案馆' : '登录私人档案馆';
+  authLead.textContent = registering
+    ? '只需要一个用户名和密码，之后每个被你选中的名字都会归档于此。'
+    : '写下此刻不需要登录，保存它时再来就好。';
+  authSubmit.textContent = registering ? '创建并登录' : '登录';
+  authModeButton.textContent = registering ? '已经有账号？直接登录' : '还没有账号？创建一个';
+  authMessage.textContent = '';
+  authMessage.removeAttribute('role');
+  authPassword.value = '';
+  showView('auth', '#authUsername');
+}
+
+function handleAuthError(error) {
+  authMessage.textContent = error.message || '这次没有完成，请稍后再试。';
+  authMessage.setAttribute('role', 'alert');
+  authUsername.focus();
+}
+
+async function continueAfterAuth() {
+  const nextAction = pendingAuthAction;
+  pendingAuthAction = null;
+  if (!nextAction) {
+    showCompose(false);
+    return;
+  }
+  if (nextAction.type === 'archive') {
+    await openArchive();
+    return;
+  }
+  if (nextAction.type === 'save') {
+    await saveCandidate(nextAction.candidate, nextAction.pane,
+      nextAction.chooseButton, nextAction.status, true);
+  }
 }
 
 function sourceLink(url) {
@@ -181,7 +240,7 @@ function renderResults(data) {
   showView('results', '#resultsTitle');
 }
 
-async function saveCandidate(candidate, pane, chooseButton, status) {
+async function saveCandidate(candidate, pane, chooseButton, status, isRetry = false) {
   const allChooseButtons = [...document.querySelectorAll('[data-choose-concept]')];
   chooseButton.disabled = true;
   chooseButton.textContent = '正在收藏……';
@@ -211,6 +270,13 @@ async function saveCandidate(candidate, pane, chooseButton, status) {
     resultMessage.textContent = `你为这个此刻选择了“${candidate.name}”。它已经被好好收进档案馆。`;
     announce('已收藏。以后回看时，这段文字和你选择的名字都会在。');
   } catch (error) {
+    if (!isRetry && error.code === 40101) {
+      chooseButton.disabled = false;
+      chooseButton.textContent = '这就是我的感觉';
+      status.textContent = '登录后，这个名字才会被收进你的私人档案馆。';
+      showAuth('login', {type: 'save', candidate, pane, chooseButton, status});
+      return;
+    }
     chooseButton.disabled = false;
     chooseButton.textContent = '这就是我的感觉';
     status.textContent = error.message || '暂时没能保存，请稍后再试。';
@@ -323,6 +389,10 @@ async function openArchive() {
     const records = await api.listRecords();
     renderArchive(Array.isArray(records) ? records : []);
   } catch (error) {
+    if (error.code === 40101) {
+      showAuth('login', {type: 'archive'});
+      return;
+    }
     renderArchiveError(error.message || '暂时无法读取记录，请稍后再试。');
   }
 }
@@ -405,7 +475,65 @@ momentForm.addEventListener('submit', async event => {
 
 document.querySelector('#homeButton').addEventListener('click', () => showCompose(false));
 document.querySelector('#archiveButton').addEventListener('click', openArchive);
+accountButton.addEventListener('click', async () => {
+  if (!currentUser) {
+    showAuth('login');
+    return;
+  }
+  try {
+    await api.logout();
+    currentUser = null;
+    knownArchiveCount = null;
+    updateArchiveCount(null);
+    updateAccountButton();
+    showCompose(false);
+    announce('已退出私人档案馆。');
+  } catch (error) {
+    announce(error.message || '暂时无法退出，请稍后再试。');
+  }
+});
 document.querySelector('#writeAgainButton').addEventListener('click', () => showCompose(false));
 document.querySelector('#newMomentButton').addEventListener('click', () => showCompose(true));
+authModeButton.addEventListener('click', () => showAuth(authMode === 'login' ? 'register' : 'login', pendingAuthAction));
+authForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const username = authUsername.value.trim();
+  const password = authPassword.value;
+  if (username.length < 3 || username.length > 32 || !/^[A-Za-z0-9_-]+$/.test(username)) {
+    authMessage.textContent = '用户名需要是 3–32 位字母、数字、下划线或短横线。';
+    authMessage.setAttribute('role', 'alert');
+    authUsername.focus();
+    return;
+  }
+  if (password.length < 8 || password.length > 72) {
+    authMessage.textContent = '密码需要是 8–72 位。';
+    authMessage.setAttribute('role', 'alert');
+    authPassword.focus();
+    return;
+  }
+  authSubmit.disabled = true;
+  authSubmit.textContent = authMode === 'register' ? '正在创建……' : '正在登录……';
+  authMessage.textContent = '';
+  try {
+    currentUser = authMode === 'register'
+      ? await api.register(username, password)
+      : await api.login(username, password);
+    updateAccountButton();
+    announce(`欢迎回来，${currentUser.username}。`);
+    await continueAfterAuth();
+  } catch (error) {
+    handleAuthError(error);
+  } finally {
+    authSubmit.disabled = false;
+    authSubmit.textContent = authMode === 'register' ? '创建并登录' : '登录';
+  }
+});
 
 updateInputState();
+updateAccountButton();
+api.me().then(user => {
+  currentUser = user;
+  updateAccountButton();
+}).catch(() => {
+  // Anonymous matching is intentional; auth is requested at the private boundary.
+});

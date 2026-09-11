@@ -66,6 +66,15 @@ public class GlobalExceptionHandler {
         if (ErrorCode.PARAM_ERROR == errorCode) {
             return HttpStatus.BAD_REQUEST;
         }
+        if (ErrorCode.AUTH_REQUIRED == errorCode || ErrorCode.AUTH_FAILED == errorCode) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        if (ErrorCode.USERNAME_TAKEN == errorCode) {
+            return HttpStatus.CONFLICT;
+        }
+        if (ErrorCode.AUTH_RATE_LIMITED == errorCode) {
+            return HttpStatus.TOO_MANY_REQUESTS;
+        }
         if (ErrorCode.RECORD_NOT_FOUND == errorCode) {
             return HttpStatus.NOT_FOUND;
         }

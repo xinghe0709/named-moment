@@ -49,6 +49,8 @@ class FrontendResourceTest {
         String api = readResource("static/js/api.mjs");
         assertTrue(api.contains("/api/emotions/match"));
         assertTrue(api.contains("/api/emotions/records"));
+        assertTrue(api.contains("/api/auth/login"));
+        assertTrue(api.contains("credentials: 'same-origin'"));
     }
 
     @Test
@@ -73,6 +75,18 @@ class FrontendResourceTest {
         assertFalse(html.contains("class=\"brand-mark\""));
         assertTrue(css.contains("transition: filter 720ms"));
         assertFalse(css.contains("border-left: 4px solid currentColor"));
+    }
+
+    @Test
+    void includesThePrivateArchiveAuthenticationSurface() throws IOException {
+        String html = readResource("static/index.html");
+        String script = readResource("static/js/app.mjs");
+
+        assertTrue(html.contains("id=\"authView\""));
+        assertTrue(html.contains("id=\"authForm\""));
+        assertTrue(html.contains("id=\"accountButton\""));
+        assertTrue(script.contains("showAuth('login'"));
+        assertTrue(script.contains("error.code === 40101"));
     }
 
     private String readResource(String path) throws IOException {

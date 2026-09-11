@@ -1,0 +1,12 @@
+server:
+  address: 127.0.0.1
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+auth:
+  cookie-secure: true
+  require-secure-secret: true
