@@ -1,6 +1,6 @@
--- Basic completeness gate. The first row must be: 100 | true.
+-- Basic completeness gate. The first row must be: 500 | true.
 SELECT COUNT(*) AS concept_count,
-       COUNT(*) = 100 AS expected_count
+       COUNT(*) = 500 AS expected_count
 FROM emotion_concept;
 
 -- Must return zero rows.
@@ -24,7 +24,7 @@ FROM emotion_concept
 GROUP BY language
 ORDER BY concept_count DESC, language;
 
--- Before API-key initialization this may be 100. After initialization it must be 0.
+-- Before API-key initialization this may be 500. After initialization it must be 0.
 SELECT COUNT(*) AS missing_embedding_count
 FROM emotion_concept
 WHERE embedding IS NULL;
