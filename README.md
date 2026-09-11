@@ -1,5 +1,11 @@
 # 此刻有名（Named Moment）
 
+## 在线体验
+
+🚀 **[打开“此刻有名”在线体验](https://expanding-kyle-opening-childrens.trycloudflare.com)**
+
+> 这是临时 Quick Tunnel 地址，仅在本机应用和 `cloudflared` 进程保持运行时有效；重启 Tunnel 后地址会变化。
+
 一个小而美的情感概念匹配应用。用户写下一段日记或想法，系统会生成结构化“情感指纹”，再从 500 个有来源的世界语言词汇与文化概念中返回匹配度最高的 3 个。用户可以选出最像自己的一个，并把这一刻留进私人情感档案馆。
 
 前端使用原生 HTML、CSS 与 JavaScript，直接随 Spring Boot 打包和启动，不需要单独安装 Node 依赖或运行前端服务。
@@ -100,14 +106,11 @@ cloudflared tunnel --protocol http2 --url http://127.0.0.1:8080
 
 ## 使用入口
 
-- 在线体验（临时 Quick Tunnel）：[https://expanding-kyle-opening-childrens.trycloudflare.com](https://expanding-kyle-opening-childrens.trycloudflare.com)
 - 此刻有名：[http://localhost:8080/](http://localhost:8080/)
 - 登录和注册在首页右上角；匹配可以匿名使用，保存和私人档案馆需要登录。
 - Swagger UI（仅本地开发模式）：[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 - OpenAPI JSON: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 - 完整请求示例：[docs/api-examples.md](docs/api-examples.md)
-
-> 在线地址是临时 Quick Tunnel，仅在本机应用和 `cloudflared` 进程保持运行时有效；重启 Tunnel 后地址会变化。
 
 ## 验证
 
